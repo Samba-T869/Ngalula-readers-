@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .scanner-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px;
+            border: 3px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .scan-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 70%;
+            border: 2px solid #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+
+        #result {
+            margin: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 5px;
+            min-width: 300px;
+            text-align: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanner-container">
+        <video id="video"></video>
+        <div class="scan-overlay"></div>
+    </div>
+    <div id="result">Scanning...</div>
+    <button id="startButton" onclick="startScanning()">Start Scanning</button>
+    <button id="stopButton" onclick="stopScanning()" disabled>Stop Scanning</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script>
+        let videoStream = null;
+        let scanning = false;
+        const video = document.getElementById('video');
+        const resultDiv = document.getElementById('result');
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+
+        async function startScanning() {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" }
+                });
+                
+                video.srcObject = videoStream;
+                await video.play();
+                
+                startButton.disabled = true;
+                stopButton.disabled = false;
+                scanning = true;
+                requestAnimationFrame(scanQR);
+            } catch (err) {
+                resultDiv.textContent = `Error accessing camera: ${err}`;
+            }
+        }
+
+        function stopScanning() {
+            scanning = false;
+            startButton.disabled = false;
+            stopButton.disabled = true;
+            
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+            }
+            
+            resultDiv.textContent = "Scanning stopped";
+        }
+
+        function scanQR() {
+            if (!scanning) return;
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            
+            if (code) {
+                resultDiv.innerHTML = `QR Code Detected: <br><strong>${code.data}</strong>`;
+            } else {
+                resultDiv.textContent = "No QR code detected";
+            }
+            
+            requestAnimationFrame(scanQR);
+        }
+    </script>
+</body>
+</html>

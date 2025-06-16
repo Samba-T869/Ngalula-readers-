@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>NGALULA READERS</title>
+  <style>
+  *{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body{
+    width: 100%;
+    height: auto;
+    background: #979ada;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding-top: 70px;
+    padding-bottom: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  .header{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-bottom: 1px solid #000000;
+    z-index: 1000;
+  }
+  .header h1{
+    font-size: 1.4rem;
+    font-weight: 800;
+    background: transparent;
+    margin: 0;
+    color: #333;
+  }
+  .header img{
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    z-index: 101;
+  }
+  .menu-container{
+    position: relative;
+  }
+  .content{
+    width: 100%;
+    max-width: 800px;
+    padding: 20px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    margin: 20px 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  p{
+    color: #fff;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    margin: 15px 0;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+  p span{
+    color: yellow;
+    border-bottom: 4px solid #0f0f00;
+    font-size: 1.8rem;
+    font-weight: 600;
+    display: inline-block;
+    margin: 10px 0;
+  }
+  p a{
+    text-decoration: none;
+    font-size: 18px;
+    color: #ffff00;
+    font-weight: 500;
+  }
+  p a:hover{
+    text-decoration: underline;
+  }
+  .content img{
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    filter: opacity(50%);
+    display: block;
+    margin: 25px auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border: 3px solid #fff;
+  }
+  .menu{
+    position: absolute;
+    width: 180px;
+    background: #fff;
+    border: 1px solid #000000;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(49,250,127,0.6);
+    display: none;
+    z-index: 100;
+    top: 100%;
+    right: 0;
+    padding: 10px 0;
+    margin-top: 5px;
+  }
+  .menu a{
+    display: block;
+    text-decoration: none;
+    cursor: pointer;
+    color: #d00;
+    padding: 10px 15px;
+    transition: all 0.3s
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+  .menu a:hover{
+    background-color: #f0f0f0;
+    color: #a00;
+    padding-left: 20px;
+  }
+  .social{
+    display: flex;
+    justify-content: center;;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    width: 100%;
+    max-width: 800px;
+    padding: 0 20px;
+  }
+  .social a{
+    display: inline-block;
+    margin: 5px 10px;
+    transition: transform 0.3s;
+  }
+  .social img{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    transition: all 0.3s;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  }
+  .social img:hover{
+    transform: scale(1.15) rotate(5deg);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+  }
+  .checkbox-container {
+      margin: 25px 0;
+      display: flex;
+      align-items: center;
+      background: rgba(255,255,255,0.2);
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .checkbox-container input {
+      margin-right: 12px;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+    }
+  .checkbox-container label{
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  @media (max-width: 600px){
+        body{
+            padding: 70px 10px 20px;          
+        }
+    .header{
+      padding: 10px 15px;
+    }
+    .header h1{
+      font-size: 1.2rem;
+    }
+    p{
+      font-size: 1rem;
+      text-align: left;
+    }
+    p span{
+      font-size: 1.5rem;
+    }
+    .menu{
+      width: 160px;
+      right: 0;
+      transform: none;
+    }
+    .social img{
+      width: 45px;
+      height: 45px;
+    }
+  }
+  
+  @keyframes slideDown{
+    from{opacity:0; transform:translateY(-10px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  .menu.show{
+    display: block;
+    animation: slideDown 0.3s ease-out;
+  }
+  </style>
+</head>
+<body> 
+  <div class="header">
+     <h1>WELCOME TO THE LIBRARY</h1>
+    <div class="menu-container">
+     <img src="{{url_for('static', filename='hamburger.svg')}}" id="menuBtn" alt="Menu">
+    <div class="menu" id="menu">
+      <a href="/photo">Photo editor</a><br>
+      <a href="/weather">Weather app</a><br>
+      <a href="/Tracker">Tracker app</a><br>
+      <a href="/Scanner">Qr Scanner</a><br>
+      <a href="/Generator">Qr generator</a><br>
+      <a href="/converter">Text-speech</a><br>
+      <a href="/menu">Library</a><br>
+      <a href="/logout">Logout</a>
+    </div>
+    </div>
+  </div>
+  
+  <div class="content">
+  <p><span>NGALULA READERS</span> <br>Is an online library
+    created to enable users to achieve 
+    their academic goals through very little 
+    energy with much greater exellence.
+    </p>
+    
+    <img src="{{url_for('static', filename='s5.jpg')}}">
+    <p>
+    We offer various features to enable
+    extremely simplification of the learning process
+    along with empowering creativity and
+    enhancing individual's critical thinking across the globe.
+    </p>
+    
+    <div class="checkbox-container">
+    <input type="checkbox" id="termsCheckbox">
+      <label for="termsCheckbox">I agree to <a href="/">terms and privacy policy.</a></label>
+    </div>
+  </div>
+ 
+  <div class="social">
+    <a href="#">
+    <img src="{{url_for('static', filename='Instagram.png')}}"<a href="https://www.instagram.com/bonny_samba?igsh=ZGUzMzM3NWJiOQ=="></a>
+    </a>
+      <a href="#">
+    <img src="{{url_for('static', filename='facebook.svg')}}">
+      </a>
+      <a href="#">
+    <img src="{{url_for('static', filename='linkedin.svg')}}">
+      </a>
+      <a href="#">
+    <img src="{{url_for('static', filename='twitter.svg')}}" <a href="">
+    </a>
+  </div>
+  
+  <script>
+  const menuBtn = document.querySelector('#menuBtn');
+  const menu = document.querySelector('.menu');
+  
+  menuBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    menu.classList.toggle('show');
+  });
+        
+   // Close menu when clicking outside
+     document.addEventListener('click', (e) => {
+      if (menu.classList.contains('show') && 
+          e.target !== menuBtn && 
+          !menu.contains(e.target)) {
+        menu.classList.remove('show');
+      }
+    });
+    
+    // Close menu when clicking on a menu item
+    menu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        menu.classList.remove('show');
+      });
+    });
+        
+  </script>
+</body>
+</html>

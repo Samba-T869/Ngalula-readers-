@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIBRARY</title>
+  <style>
+  body{
+    background: #123456;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    color: #fff;
+  }
+  .search-field{
+    width: 80%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .search-field input{
+    width: 80%;
+    height: 6vh;
+    font-size: 20px;
+    border: 1px solid #000000;
+    border-radius: 15px;
+    padding-left: 15px;
+  }
+  .search-field input::placeholder{
+    color: #000000;
+  }
+  .search-field img{
+    width: 6vh;
+    height: 6vh;
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+  }
+  .text-field{
+    display: flex;
+    margin-top: 8vh;
+    flex-direction: column;
+    align-items: center;
+    width: 80%;
+  }
+  .text-field textarea{
+    width: 100%;
+    height: 40vh;
+    border: 1px solid #2358;
+    border-radius: 20px;
+    font-size: 20px;
+    padding-left: 13px;
+    padding-top: 10px;
+  }
+  .text-field textarea::placeholder{
+    color: #000000;
+  }
+  .buttons{
+    width: 80%;
+    margin-top: 5vh;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .buttons button{
+    width: 22%;
+    height: 6vh;
+    border-radius: 15px;
+    font-size: 20px;
+    background: #ad24e9;
+    border: 0;
+  }
+  .file-field{
+    margin-top: 8vh;
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+  }
+  .file-field button{
+    width: 60%;
+    left: 30px;
+    font-size: 20px;
+    height: 60px;
+  }
+  h1{
+    font-size: 26px;
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+  #documentList{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: left;
+    margin-top: 5vh;
+  }
+  .my-document{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  .my-document button{
+    height: 6vh;
+    width: 40px;
+    margin-right: 10vh;
+    border: none;
+    border-radius: 10px;
+    background: #ff0000;
+  }
+ .my-document h3{
+    color: #0001ff;
+    font-size: 20px
+  }
+  .my-document p{
+    font-size: 15px;
+    color: #fff;
+  }
+  a{
+    width: 50%;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1.6rem;
+    color: #000000;
+    cursor: pointer;
+    border-radius: 12px;
+    background: #ad24e9;
+    float: right;
+  }
+  #upload-button{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: #fff;
+  }
+  </style>
+</head>
+<body>
+  <h1>WELCOME TO THE LIBRARY</h1>
+  <div class="search-field">
+     <input type="search" id="search" placeholder="Search documents">
+     <img src="{{url_for('static', filename='search.svg')}}" id="searchBtn" onclick="searchDocument()">
+  </div>
+  
+  <div class="text-field">
+     <textarea id="newDocument" placeholder="Type your document here..."></textarea>
+    <div class="buttons">
+     <button id="save" onclick="saveDocument">Save</button>
+     <button id="view" onclick="viewDocument()">View</button>
+     <img src="{{url_for('static', filename='add.svg')}}" id="upload-button">
+    </div>
+  </div>
+  <div class="menu" style="display: none;">
+    
+  </div>
+    <input type="file" id="fileUpload" style="display: none" accept="image/*,audio/*,application/pdf">
+    <div id="documentList"></div>
+  <a href="/logout">Logout</a>
+<script>
+    const search = document.querySelector('#search');
+    const searchBtn = document.querySelector('#searchBtn');
+    const textarea = document.querySelector('#newDocument');
+    const save = document.querySelector('#save');
+    const view = document.querySelector('#view');
+    const delet = document.querySelector('#delete');
+    const uploadInput = document.querySelector("#fileUpload");
+    const uploadButton = document.querySelector("#upload-button");
+    const documentList = document.querySelector("#documentList");
+  
+  window.addEventListener('DOMContentLoaded', ()=>{
+    loadDocuments();
+  });
+  
+  //Initialize document array in local storage
+  let documents = JSON.parse(localStorage.getItem("documents")) || [];
+  
+    function saveDocument(e){
+      e.preventDefault();
+      if( textarea.value === ''){
+        alert('You cant save an empty document');
+        return;
+      }
+      else{
+      const title = prompt("Title:");
+      if( title && textarea.value){
+        const document ={
+          id: Date.now(), title,
+          content: textarea.value,
+          type: "text"
+        }
+        documents.push(document);
+        localStorage.setItem('documents', JSON.stringify(documents));
+        loadDocuments();
+        textarea.value ='';
+      }
+        
+      }
+    }
+      
+      function handleFileUpload(event) {
+        event.preventDefault()
+        const file = event.target.files[0];
+        if(file){
+          const reader = new FileReader();
+          reader.onload = function(e){
+            const document = {
+              id: Date.now(),
+              title: file.name,
+              content: e.target.result,
+              type: file.type
+            }
+            documents.push(document);
+            localStorage.setItem('documents', JSON.stringify(documents));
+            loadDocuments();
+          }
+          reader.readAsDataURL(file);
+        }
+      }
+      
+        //Load and display documents
+        function loadDocuments(user) {
+          documentList.innerHTML ='';
+          documents.forEach(doc => {
+            const div = document.createElement('div');
+            div.innerHTML =`
+            <div class='my-document'>
+            <div>
+            <h3 onclick='openDocument(${doc.id})' style='cursor:pointer'>${doc.title}</h3>
+            ${doc.type === 'text' ?
+            `<p>${doc.content.substring(0, 50)}...</p>` :
+            `<a href='${doc.content}' content='_blank'>Open file</a>`
+            }
+            </div>
+            <button onclick='deleteDocument(${doc.id})'>&times</button>
+            </div>
+            `;
+            documentList.appendChild(div);
+          });
+         }
+      
+      //Open document function
+       function openDocument(id){
+         const doc = documents.find(d => d.id === id);
+          if(doc){
+            if(doc.type === 'text'){
+              textarea.value = doc.content; //Load the text contents into the textarea
+            }
+            else{
+              window.open(doc.content, '_blank'); //Open non-text files into a new tab
+            }
+          }
+       }
+     
+       function searchDocument(){
+         const searchTerm = search.value.toLowerCase();
+         const filtered = documents.filter(doc => 
+            doc.title.toLowerCase().includes(searchTerm) || 
+            (doc.type === 'text' && doc.content.toLowerCase().includes(searchTerm))
+        );
+        documents = filtered;
+        loadDocuments(filtered); //Pass the filtered results
+       }
+     
+    function deleteDocument(id) {
+     documents = documents.filter(doc => doc.id !== id);
+     localStorage.setItem('documents', JSON.stringify(documents));
+     loadDocuments();
+   }
+       
+     // Event listeners
+      uploadInput.addEventListener('change', handleFileUpload);
+      uploadButton.addEventListener("click", (e) => {
+        e.preventDefault();
+        uploadInput.click();
+      });
+  
+      searchBtn.addEventListener('click', searchDocument);
+      save.addEventListener('click', saveDocument);
+  
+      // Initialize with example documents if empty
+      if (documents.length === 0) {
+        documents.push(
+            {id: 1, title: 'Example Document', content: 'Welcome to the library!', type: 'text'});
+        localStorage.setItem('documents', JSON.stringify(documents));
+      }
+      </script>
+</body>
+</html>

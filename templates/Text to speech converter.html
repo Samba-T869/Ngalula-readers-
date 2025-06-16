@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text to Speech converter</title>
+  <style>
+  body{
+    background: linear-gradient(135deg, #6a11cb 0%; #2575fc 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .container{
+    background: white;
+    border-radius: 12px;
+    width: 400px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+  h3 {
+    color: #2575fc;
+    text-align: center;
+    margin-top: 0;
+    font-size: 28px;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .container textarea{
+    width: 100%;
+    height: 120px;
+    resize: none;
+    outline: none;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    transition: border-color 0.3s;
+  }
+  .container textarea:focus {
+    border-color: #2575fc;
+  }
+  .container label{
+    display: block;
+    margin-bottom: 15px;
+  }
+  .container label span{
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .container label select, .container label input{
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+  }
+  .container label input[type="range"] {
+    padding: 0;
+    height: 8px;
+    background: #e0e0e0;
+    outline: none;
+    -webkit-appearance: none;
+    border-radius: 4px;
+  }
+  .container label input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #2575fc;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .button-container {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+    flex-wrap: wrap;
+  }
+  .button{
+    display: inline-block;
+    background: linear-gradient(to right, #2575fc, #4facfe);
+    padding: 12px 25px;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    text-align: center;
+    flex: 1;
+    min-width: 120px;
+    box-shadow: 0 4px 8px rgba(37, 117, 252, 0.3);
+    transition: all 0.3s;
+  }
+  .button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(37, 117, 252, 0.4);
+  }
+  .button:active {
+    transform: translateY(0);
+  }
+  .button.stop {
+    background: linear-gradient(to right, #ff416c, #ff4b2b);
+    box-shadow: 0 4px 8px rgba(255, 65, 108, 0.3);
+  }
+  .input {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    background: #f0f8ff;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px dashed #2575fc;
+  }
+  .input img{
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    margin-right: 15px;
+  }
+  .file-info {
+    flex: 1;
+    color: #2575fc;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .status {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 6px;
+    background: #f0f8ff;
+    color: #2575fc;
+    font-weight: 500;
+    text-align: center;
+    display: none;
+  }
+  .slider-value {
+    display: inline-block;
+    width: 30px;
+    text-align: right;
+    font-weight: 600;
+    color: #2575fc;
+  }
+  .speaking {
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(37, 117, 252, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(37, 117, 252, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(37, 117, 252, 0); }
+  }
+  .voice-loading {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #2575fc;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    animation: spin 1s linear infinite;
+    display: none;
+  }
+  @keyframes spin {
+    0% { transform: translateY(-50%) rotate(0deg); }
+    100% { transform: translateY(-50%) rotate(360deg); }
+  }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h3>#weSpeak</h3>
+  <textarea id="myText" placeholder="Type anything..."></textarea>
+  
+  <div class="input">
+  <input type="file" id="file" style="display:none" accept=".txt">
+  <img src="{{url_for('static', filename='attachment.svg')}}" id="doc">
+    <div class="file-info">Upload text file</div>
+  </div>
+  
+  <label>
+    <span>voice <span id="voiceValue">Voice loading...</span>
+      <div class="voice-loading" id="voiceLoading"></div>
+    </span>
+    <select id="voiceOption"></select>
+  </label>
+  
+  <label>
+    <span>Volume <span class="slider-value" id="volumeValue">0.5</span></span>
+    <input type="range" id="volumeSlider" min="0" max="1" value="0.5" step="0.1"/>
+  </label>
+  
+  <label>
+    <span>Speed <span class="slider-value" id="rateValue">1.0</span></span>
+    <input type="range" id="rateSlider" min="0.1" max="4" value="1.0" step="0.1"/>
+  </label>
+  
+  <label>
+    <span>pitch <span class="slider-value" id="pitchValue">1.0</span></span>
+    <input type="range" id="pitchSlider" min="0" max="2" value="1.0" step="0.1"/> 
+    </label>
+  
+  <div class="status" id="status">Processing file...</div>
+  
+  <div class="button-container">
+   <div class="button" onclick="speak();">Speak</div>
+    <div class="button stop" onclick="stopSpeaking();">Stop</div>
+    <div class="button" onclick="clearText();">Clear</div>
+  </div>    
+</div>
+  <script>
+  const file=document.querySelector('#file');
+  const doc=document.querySelector('#doc');
+  const status=document.querySelector('#status');
+  const fileInfo = document.querySelector('.file-info');
+  const voiceLoading = document.getElementById('voiceLoading');
+  
+  const voiceOption = document.getElementById('voiceOption');
+  const volumeSlider = document.getElementById('volumeSlider');
+  const rateSlider = document.getElementById('rateSlider');
+  const pitchSlider = document.getElementById('pitchSlider');
+  const myText = document.getElementById('myText');
+  
+  const voiceMap = {};
+  
+  function initVoices() {
+    loadVoices();
+    // Now set up other components
+    volumeSlider.addEventListener('input', function() {
+        document.getElementById('volumeValue').textContent = this.value;
+    });
+    
+    rateSlider.addEventListener('input', function() {
+    document.getElementById('rateValue').textContent = this.value;
+  });
+  
+  pitchSlider.addEventListener('input', function() {
+    document.getElementById('pitchValue').textContent = this.value;
+  });
+  }
+    
+  function checkCompatibility () {
+    if(!('speechSynthesis' in window)){
+      alert('Your browser is not supporting this API, Please try google chrome!');
+      return;
+    }
+    
+    voiceLoading.style.display = 'block';
+    document.getElementById('voiceValue').textContent = "Loading voices...";
+    
+    if (speechSynthesis.getVoices().length > 0) {
+      initVoices();
+    } else {
+      speechSynthesis.addEventListener('voiceschanged', initVoices);
+    }
+  };
+  
+  function loadVoices(){
+    voiceLoading.style.display ='none';
+    const voices = speechSynthesis.getVoices();
+    
+    if(voices.length === 0) {
+    document.getElementById('voiceValue').textContent = "No voices available";
+    return;
+  }
+  
+    voices.forEach(voice => {
+        const option = document.createElement('option');
+        option.value = voice.name;
+        option.textContent = voice.name;
+        voiceOption.appendChild(option);
+        voiceMap[voice.name] = voice;
+    });
+    
+    document.getElementById('voiceValue').textContent = voices[0].name;
+}
+  
+    checkCompatibility();
+    
+  window.speechSynthesis.onvoiceschanged = function(e){
+    loadVoices();
+  };
+  
+  function speak (){
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+    }
+    
+    var msg = new SpeechSynthesisUtterance();
+    msg.volume = volumeSlider.value;
+    msg.rate = rateSlider.value;
+    msg.pitch = pitchSlider.value;
+    msg.text = myText.value;
+    
+    if(myText.value.trim() === ''){
+      msg.text = 'Please type something or upload a text file first';
+    }
+    
+    
+    var selectedVoice = voiceMap[voiceOption.value];
+    if (selectedVoice){
+      msg.voice = selectedVoice;
+    }
+    
+    // Visual feedback
+    document.querySelector('.button').classList.add('speaking');
+    
+    // Update status
+    status.style.display = 'block';
+    status.textContent = 'Speaking...';
+    
+    msg.onend = function() {
+      document.querySelector('.button').classList.remove('speaking');
+      status.style.display = 'none';
+    };
+    
+    msg.onerror = function(event) {
+    console.error('Speech Error:', event.error);
+    status.textContent = 'Error: ' + event.error;
+    document.querySelector('.button').classList.remove('speaking');
+  };
+    
+    window.speechSynthesis.speak(msg);
+  };
+  
+  function stopSpeaking() {
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      document.querySelector('.button').classList.remove('speaking');
+      status.style.display = 'none';
+    }
+  }
+  
+  function clearText() {
+    myText.value = '';
+    stopSpeaking();
+  }
+  
+  doc.addEventListener('click', () => {
+    file.click();
+  });
+  
+  file.addEventListener('change', handleFileUpload);
+  
+  function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    fileInfo.textContent = file.name;
+    
+    // More flexible file type validation
+    const isTextFile = file.type === 'text/plain' || 
+                      file.name.toLowerCase().endsWith('.txt');
+    
+    if (!isTextFile) {
+      alert('Please upload a plain text file (.txt)');
+      resetFileInput();
+      return;
+    }
+    
+    // Show status
+    status.style.display = 'block';
+    status.textContent = 'Reading file...';
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+      myText.value = e.target.result;
+      status.textContent = 'File loaded successfully!';
+      resetFileInput();
+    };
+    
+    reader.onerror = function() {
+      status.textContent = 'Error reading file';
+      resetFileInput();
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 2000);
+    };
+    
+    reader.readAsText(file);
+  }
+  
+  function resetFileInput() {
+    file.value = '';
+    fileInfo.textContent = 'Upload text file(.txt)';
+  }
+  
+  // Voice selection change
+  voiceOption.addEventListener('change', function() {
+    document.getElementById('voiceValue').textContent = this.value;
+  });
+    
+  </script> 
+</body>
+</html>

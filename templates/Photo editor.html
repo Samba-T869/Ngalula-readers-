@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Editor!</title>
+  <style>
+  body{
+    height: 100vh;
+    width: 100%;
+    background: #262826;
+  }
+  h1{
+    color: #0000ff;
+    text-align: center;
+  }
+  label{
+    font-size: 15px;
+    margin-top: 30px;
+    color: #0000ff;
+  }
+  input{
+    width: 70%;
+    height: 8px;
+    margin: 2vh;
+  }
+  canvas{
+    max-width: 90%;
+    border-radius: 15px;
+    align-items: center;
+    justify-content: center;
+  }
+  .buttons{
+    display: flex;
+    justify-content: space-between;
+  }
+  .buttons img{
+    height: 40px;
+    width: 40px;
+    background: #fff;
+    border-radius: 50%;
+    text-decoration: none;
+    justify-content: center;
+    margin-left: 30px;
+    margin-right: 30px;
+  }
+  </style>
+</head>
+<body>
+  <h1>Edit your Photo!</h1>
+  <canvas id="myImage"></canvas>
+  
+  <input type="range" id="range" min="0" max="200" value="100">
+  <label for="range">Brightness</label>
+  <input type="range" id="range1" min="0" max="200" value="100">
+  <label for="range1">Contrast</label>
+  <input type="range" id="range2" min="0" max="200" value="100">
+  <label for="range2">Saturate</label>
+  <input type="range" id="range3" min="0" max="200" value="1">
+  <label for="range3">Grayscale</label>
+  <br><br>
+  
+  <div class="buttons">
+  <img src="{{url_for('static', filename='download.svg')}}" id="myBtn">
+  <input type="file" id="album" accept="image/*" style="display:none">
+  <img src="{{url_for('static', filename='plus.svg')}}" id="upload">
+  <a href="/library"><img src="{{url_for('static', filename='backward.svg')}}"></a>
+  </div>
+  
+  <script>
+  const album = document.querySelector("#album");
+  const canvas =document.querySelector("#myImage");
+  const ctx = canvas.getContext("2d");
+  const range =document.querySelector("#range");
+  const range1 =document.querySelector("#range1");
+  const range2 =document.querySelector("#range2");
+  const range3 =document.querySelector("#range3");
+  const mySrc =document.querySelector("#mySrc");
+  const myBtn =document.querySelector("#myBtn");
+  const upload =document.querySelector("#upload");
+  
+  
+  document.addEventListener('DOMContentLoaded', ()=>{
+    image.src = 'img1.jpg';
+  applyFilters();
+  })
+  
+  let image = new Image();
+  
+  album.onchange = () => {
+      const file = album.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        image.onload = () => {
+          canvas.width = image.width;
+          canvas.height = image.height;
+          applyFilters();
+        };
+        image.src = reader.result;
+      };
+    };
+  
+   upload.addEventListener('click', ()=>{
+     album.click();
+   });
+  
+  //Add eventListeners for sliders
+  range.addEventListener('input', applyFilters);
+  range1.addEventListener('input', applyFilters);
+  range2.addEventListener('input', applyFilters);
+  range3.addEventListener('input', applyFilters);
+  
+  function applyFilters() {
+    const brightnessValue = range.value;
+    const contrastValue = range1.value;
+    const saturateValue = range2.value;
+    const grayscaleValue = range3.value;
+    
+      const filterStr = `
+        brightness(${brightnessValue}%)
+        contrast(${contrastValue}%)
+        saturate(${saturateValue}%)
+        grayscale(${grayscaleValue}%)
+      `
+      .replace(/;\s+/g, '').trim(); //Remove linebreaks and extra space
+      ctx.filter = filterStr;
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    }
+  
+  myBtn.addEventListener('click',()=>{
+      const link = document.createElement("a");
+      link.download = prompt("Name:");
+      link.href = canvas.toDataURL();
+      link.click();
+    });
+  
+  </script>
+</body>
+</html>
